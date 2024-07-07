@@ -116,7 +116,7 @@
                 \item \textbf{Looking at density} - if there are more individuals above than below the cutoff, it is likely that individuals are not as good as randomly assigned, as they are choosing to be one side of the cutoff.
                 \item \textbf{Looking at covariate values} - if individuals above and below the cutoff have similar values for observable covariates, then individuals above and below look similar, and treatment is more likely to be as good as random.
             \end{enumerate}
-            To implement this in STATA, refer to Listing \ref{lst:RDD_test}
+            To implement this in STATA, refer to Listing \ref{lst:RDD/test_assumption}.
             \begin{sexylisting}[colback=white, label=lst:RDD/test_assumption]{Testing assumptions}
 //  (1) Summarise the data above the cutoff. 
 //  List controls w_1, w_2 w.r.t. condition: x >= cutoff
@@ -150,11 +150,49 @@
 //  (2) Calculate the Silverman bandwidth
     gen silverman = 1.06 * r(N)^(-1/5) * r(sd) 
     
-//  (3) Run the regression with Silverman’s bandwidth
+//  (3) Run the regression with Silverman's bandwidth
     reg y x_centered treat interaction, robust, /*
     */ if inrange(x, cutoff - silverman, cutoff + silverman) 
             \end{sexylisting}
             In applied research, we use a variety of bandwidths to show that results do not depend greatly on bandwidth choice. If it turns out our bandwidth choice changes our results greatly, then the credibility of results is badly harmed.
+
+        \subsection{Centering}
+            We specified the RDD model with a centered $x$ around the cutoff $\theta$. What if we don’t centre on $\theta$, and instead run
+            \begin{align}
+                y_i = \gamma_0 + \gamma_1 x_i + \gamma_2 D_i + \gamma_3 (x_i \cdot D_i) + u_i
+            \end{align}
+            Nothing fundamentally changes, only the interpretations of the coefficients when looking at the jump due to $D_i$. To see this, opening the original specification yields
+            \begin{align}
+                y_i = \beta_0 - \beta_1 \theta + \beta_1 x_i + (\beta_2 - \beta_3\theta) D_i + \beta_3 (x_i \cdot D_i) + u_i
+            \end{align}
+            From here one can clearly see the correspondence between the two models.
+
+        \subsection{Non-linear RDD}
+            If we plot the data and observe we have a non-linear relationship between $y_i$ and $x_i$, for example a quadratic relation, then we can use a quadratic RDD model:
+            \begin{align}
+                y_i = \beta_0 +\beta_1 (x_i- \theta) + \beta_2 (x_i-\theta)^2+ \beta_3 D_i + \beta_4 (x_i-\theta)\cdot D_i+\beta_5 (x_i-d)^2\cdot D_i + u_i
+            \end{align}
+            Note that with a small window, every polynomial, by Taylor’s theorem is approximately linear. 
+	        
+            An example in STATA building on preivous listings in this chapter is presented below in \ref{lst:non_linear}
+            
+            \begin{sexylisting}[colback=white, label=lst:RDD/non_linear]{Non-linear RDD}
+//  (1) Calculate Silverman's bandwidth
+    sum x, d
+    gen silverman = 1.06*r(N)^(-1/5)*r(sd)
+
+//  (2) Generate linear, quadratic and interaction terms
+    gen x_centred = x – cutoff
+    gen x_centred2 = x_centred^2
+    gen treat = x >= cutoff
+    gen interaction = treat * x_centred
+    gen interaction2 = treat * x_centred2
+    
+//  (3) Run the regression with Silverman's bandwidth \\
+//      and all interactions
+    reg y x_centred x_centred2 treat interaction interaction2,/*
+    /* robust, if inrange(x, cutoff-silverman , cutoff+silverman) 
+            \end{sexylisting}
 
 
                 
