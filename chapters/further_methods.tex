@@ -1,0 +1,117 @@
+\chapter{Further Identification Methods}
+    \section{Regression Discontinuity Design (RDD)}
+        The method exploits a setup in which treatment is based on another variable being above or below a threshold. We can exploit this to create a situation in which treatment is as good as assigned.
+
+    	In particular, RDD is a powerful tool as it creates beautiful and convincing graphs. Showing the effect of  on  can be difficult to communicate to all audiences due to the numerous considerations in applied econometric analysis. Hence convincing graphs are important to convey and communicate results to others.
+
+        \subsection{Regression}
+            Let $x_i$ be the `running variable', and $D_i$ be a dummy variable constructed by
+            \begin{align}
+                D_i =
+                \begin{cases}
+                    1 &\text{if }x_{i} \geq \theta   \\
+                    0 &\text{if }x_{i} < \theta
+                \end{cases}
+            \end{align}
+            where $\theta$ is the threshold.
+
+            Examples of this could be: scholarships awarded if test scores $\geq d$; parliamentary majorities, such as seats $\geq 326$ in the UK House of Commons.
+
+            We want to know the effect of being over the threshold, i.e. $D_i$ on $y_i$. Consider the regression,
+            \begin{align}
+                y_i = \beta_0 +\beta_1 (x_i-\theta) + \beta_2 D_i + \beta_3 (x_i-\theta)\cdot D_i+u_i
+            \end{align}
+            The regression model in \eqref{eq:} is plotted in Figure XX.
+            \begin{figure}
+                \centering
+                \caption{Caption}
+                \label{fig:enter-label}
+            \end{figure}
+
+        \subsection{Interpretation}
+            How can we interpret the coefficients? To see the meaning behind the regression \eqref{eq:}. we consider the position and slope separately.\\
+            
+            \noindent\textbf{Intercept and jump.}
+            \begin{itemize}
+                \item If we are \textit{exactly at the threshold}, that is $x_i = \theta \implies D_i = 1$, then
+                \begin{align}
+                    \expect{y_i | x_i = \theta} = \beta_0 + \beta_2
+                \end{align}
+                
+                \item If we are \textit{slightly below the threshold}, $x_i = \theta -\varepsilon$ for a very small $\varepsilon>0$, i.e. very close but not equal to $\theta$
+                \begin{align}
+                    \expect{y_i\lvert x_i = \theta - \varepsilon} \approx \beta_0
+                \end{align}
+            \end{itemize}\\
+
+            \noindent\textbf{Slopes.}
+            \begin{itemize}
+                \item If we are \textit{below the threshold}, that is $x_i < \theta\implies D_i=0$, then
+                \begin{align}
+                    \expect{y_i | x_i < \theta} = \beta_0 + \beta_1 (x_i-\theta)
+                \end{align}
+                and the slope is
+                \begin{align}
+                    \pdv*{\expect{y_i|x_i<\theta}}{x_i}= \beta_1
+                \end{align}
+
+                \item If we are \textit{above the threshold}, that is $x_i\geq \theta\implies D_i = 1$, then
+                \begin{align}
+                    \expect{y_i | x_i \geq\theta} = \beta_0 + \beta_1 (x_i-\theta) + \beta_2 + \beta_3 (x_i-\theta)
+                \end{align}
+                and the slope is
+                \begin{align}
+                    \pdv*{\expect{y_i|x_i\geq\theta}}{x_i}= \beta_1 + \beta_3
+                \end{align}
+            \end{itemize}
+
+
+        \subsection{Motivation and assumptions}
+            Let us consider an example. Let $x_i$ be `test scores'`, $D_i$ be a scholarship award and $y_i$ be `years of college received'. We want to know the effect receiving a scholarship may have on years of college completed. A `naive' regression would be
+            \begin{align}
+                y_i = \beta_0 +\beta_1 x_i +\beta_2 D_i + u_i
+            \end{align}
+            However, this naive regression can have problems. There are many unobserved characteristics (confounders), such as parent’s income, which may simultaneously affect both $x_i$, test scores and $y_i$, years of college.
+
+            Alternatively, we can use our RDD regression which was
+            \begin{align}
+                y_i = \beta_0 + \beta_1 (x_i-\theta) + \beta_2 D_i + \beta_3 (x_i-\theta)\cdot D_i + u_i
+            \end{align}
+            With RDD, we need to restrict our observations to people with similar scores around a window centred at $\theta$. We assume unobserved characteristics of individuals who are slightly above the cutoff, $x_i = \theta + \varepsilon$ are likely to be comparable to unobserved characteristics of individuals slightly below the cutoff, $x_i = \theta - \varepsilon$. In other words, we assume \textbf{confounders remain constant slightly above and below the cutoff}, removing selection bias (see chapter on matching). Since confounders are constant, there is no omitted variable bias and we can interpret the slope statistics as causal.
+
+        \subsection{Implementation}
+            The steps to implement RDD involve:
+            \begin{enumerate}[(1)]
+                \item centering the running variable, i.e. create $x_i-\theta$, 
+                \item creating a dummy for the cutoff,
+                \item creating the interaction term,
+                \item performing the regression.
+            \end{enumerate}
+            The STATA code to perform steps (1) to (4) is in Listing \ref{lst:RDD}.
+            \begin{sexylisting}[colback=white, label=lst:RDD]{RDD}
+//  1. Center the running variable,
+    gen x_centered = x - cutoff
+    
+//  2. Create a dummy for the cutoff,
+    gen treat = x >= cutoff
+    
+//  3. Create the interaction term,
+    gen interaction = treat * x_centered
+
+//  4. Run the regression:
+    reg y x_centred treat interaction, robust, /*
+    */  if inrange(x, min, max)
+            \end{sexylisting}
+
+        \subsection{Testing assumptions}
+
+
+
+                
+
+
+
+
+            
+
+            
