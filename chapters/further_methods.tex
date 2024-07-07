@@ -88,23 +88,73 @@
                 \item performing the regression.
             \end{enumerate}
             The STATA code to perform steps (1) to (4) is in Listing \ref{lst:RDD}.
-            \begin{sexylisting}[colback=white, label=lst:RDD]{RDD}
-//  1. Center the running variable,
+            \begin{sexylisting}[colback=white, label=lst:RDD/regression]{RDD}
+//  (1) Center the running variable,
     gen x_centered = x - cutoff
     
-//  2. Create a dummy for the cutoff,
+//  (2) Create a dummy for the cutoff,
     gen treat = x >= cutoff
     
-//  3. Create the interaction term,
+//  (3) Create the interaction term,
     gen interaction = treat * x_centered
 
-//  4. Run the regression:
+//  (4) Run the regression:
     reg y x_centred treat interaction, robust, /*
     */  if inrange(x, min, max)
             \end{sexylisting}
 
         \subsection{Testing assumptions}
+            To summarise what we previously mentioned on assumptions, as we restrict values are close to the cutoff, we assume that confounders between the two groups are constant.
 
+            Importantly, for the RDD assumption to hold true, \textbf{individuals must not be able to choose which side of the cutoff they are on}, and so treatment is as good as random around the cutoff. This is another reason why we only use data around a window of the cutoff to make this assumption believable.
+
+            \begin{example}
+                Consider the case that if high school students are awarded `honours' certificate if they read 20 books. Students have the choice if they want to read twenty or more books, and many will read just enough to surpass the cutoff. Therefore treatment will not be as good as randomly assigned at the cutoff.
+            \end{example}
+            How can we `test' the assumptions? There are two methods to do this:
+            \begin{enumerate}
+                \item \textbf{Looking at density} - if there are more individuals above than below the cutoff, it is likely that individuals are not as good as randomly assigned, as they are choosing to be one side of the cutoff.
+                \item \textbf{Looking at covariate values} - if individuals above and below the cutoff have similar values for observable covariates, then individuals above and below look similar, and treatment is more likely to be as good as random.
+            \end{enumerate}
+            To implement this in STATA, refer to Listing \ref{lst:RDD_test}
+            \begin{sexylisting}[colback=white, label=lst:RDD/test_assumption]{Testing assumptions}
+//  (1) Summarise the data above the cutoff. 
+//  List controls w_1, w_2 w.r.t. condition: x >= cutoff
+    sum w_1 w_2 if x >= cutoff & inrange(x, min, max)
+    
+//  (2) Summarise the data below the cutoff.
+    sum w_1 w_2 if x < cutoff & inrange(x, min, max)
+
+//  For (1), look if the # of observations, Obs, is similar
+//  in both tables. For (2), look to see if covariates are
+//  similar in value in both tables.
+            \end{sexylisting}
+
+        \subsection{Window choice}
+            With RDD we have a choice of bandwidth/window. As discussed in before, the small bandwidth helps support our assumption of as good as random assignment near to cutoff. However this reduces the number of observations. Therefore we face a trade-off when choosing our bandwidth size, denoted by \verb|(min, max)| in the code sections before:
+            \begin{itemize}
+                \item A \textbf{smaller bandwidth} will reduce the number observations, and decrease the precision of our estimates. However, our assumption is more plausible and bias is reduced.
+                \item A \textbf{larger bandwidth} will increase the number observations, and increase the precision of our estimates. However, our assumption is less plausible and bias is increased.
+            \end{itemize}
+            One suggested method to balance the trade-off is to use `Silverman’s rule of thumb', which chooses the bandwidth
+            \begin{align}
+                \text{Silverman's bandwidth} = 1.06 \hat \sigma_x n^{-\frac{1}{5}}
+            \end{align}
+            This is derived by minimising mean squared error (MSE), which as mentioned in ST102 is $(\expect{\hat\theta} -\theta )^2 + \var{\hat\theta}$; although we will not prove it here.
+
+            To implement this, (1) we find the standard deviation of the running variable and the number of observations, (2) calculate Silverman’s bandwidth, and (3) run the regression with Silverman’s bandwidth. In STATA, the code is detailed in Listing \ref{lst:RDD/silverman}.
+            \begin{sexylisting}[colback=white, label=lst:RDD/silverman]{Silverman's bandwidth}
+//  (1) Output a detailed summary
+    sum x, d
+
+//  (2) Calculate the Silverman bandwidth
+    gen silverman = 1.06 * r(N)^(-1/5) * r(sd) 
+    
+//  (3) Run the regression with Silverman’s bandwidth
+    reg y x_centered treat interaction, robust, /*
+    */ if inrange(x, cutoff - silverman, cutoff + silverman) 
+            \end{sexylisting}
+            In applied research, we use a variety of bandwidths to show that results do not depend greatly on bandwidth choice. If it turns out our bandwidth choice changes our results greatly, then the credibility of results is badly harmed.
 
 
                 
