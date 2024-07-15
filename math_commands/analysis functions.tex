@@ -18,3 +18,9 @@
       \operatorname*{argmin}%     the argmax operator
       \IfValueT{#1}{_{#1}}% subscript immediately after argmax
     }
+
+%   Indicator
+    \NewDocumentCommand{\ind}{ e{_} }{%
+      \operatorname{\mathbf 1}%     the argmax operator
+      \IfValueT{#1}{_{\{#1\}}}% subscript immediately after argmax
+    }

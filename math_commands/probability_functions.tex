@@ -85,6 +85,51 @@
     }
     \DeclarePairedDelimiterX{\corrarg}[1]{(}{)}{#1}
 
+% Estimators
+
+%   Variance
+    \NewDocumentCommand{\evar}{ O{} e{_} s o >{\SplitArgument{1}{|}}m }{%
+      \operatorname{\widehat{\mathrm{var}}}%     the variance operator
+      \IfValueT{#2}{_{{#2}}}% subscript immediately after Var
+      \IfValueT{#1}{^{\mathbb{#1}}}% superscript immediately after Var
+      \IfBooleanTF{#3}{% *-variant
+        \evararg*{\evarvar#5}%
+      }{% no *-variant
+        \IfNoValueTF{#4}{% no optional argument
+          \evararg{\evarvar#5}%
+        }{% optional argument
+          \evararg[#4]{\evarvar#5}%
+        }%
+      }%
+    }
+    \NewDocumentCommand{\evarvar}{mm}{%
+      #1\IfValueT{#2}{\nonscript\;\delimsize\vert\nonscript\;#2}%
+    }
+    \DeclarePairedDelimiterX{\evararg}[1]{(}{)}{#1}
+
+
+%   Covariance
+    \NewDocumentCommand{\ecov}{ O{} e{_} s o >{\SplitArgument{1}{|}}m }{%
+      \operatorname{\widehat{\mathrm{cov}}}%     the covariance operator
+      \IfValueT{#2}{_{{#2}}}% subscript immediately after Cov
+      \IfValueT{#1}{^{\mathbb{#1}}}% superscript immediately after Cov
+      \IfBooleanTF{#3}{% *-variant
+        \ecovarg*{\ecovvar#5}%
+      }{% no *-variant
+        \IfNoValueTF{#4}{% no optional argument
+          \ecovarg{\ecovvar#5}%
+        }{% optional argument
+          \ecovarg[#4]{\ecovvar#5}%
+        }%
+      }%
+    }
+    \NewDocumentCommand{\ecovvar}{mm}{%
+      #1\IfValueT{#2}{\nonscript\;\delimsize\vert\nonscript\;#2}%
+    }
+    \DeclarePairedDelimiterX{\ecovarg}[1]{(}{)}{#1}
+
+
+
 
 %   Probability with measure
     \NewDocumentCommand{\prob}{ O{} e{_} s o >{\SplitArgument{1}{|}}m }{%

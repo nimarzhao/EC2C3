@@ -94,16 +94,23 @@
         \subsection{Confounders}
             Why may selection bias arise? One answer comes from confounders.
             \begin{definition}[Confounder]
-                A \textit{confounder} is a common factor that is correlated with both the treatment and outcome. Graphically we can view this as another variable, $Z$ in Figure \ref{fig:}.
-            \end{definition}  
+                A \textit{confounder} is a common factor that is correlated with both the treatment and outcome. Graphically we can view this as another variable, $Z$ in Figure \ref{fig:selection/confounders}.
+            \end{definition}
+
+            \begin{figure}[h]
+                \centering
+                \input{figures/confounders}
+                \caption{Confounders}
+                \label{fig:selection/confounders}
+            \end{figure}
 
             How does this relate to selection bias? For example, if the treatment $D_i$ was `health insurance' and outcome variable was `health', then a confounder could be `education'. Education may improve both an individual’s probability of taking health insurance and health outcomes, hence the observed difference is unlikely to be an accurate depiction of the effect of health insurance on health outcomes.
 
 
         \subsection{Random assignment}
-            Suppose we randomly assign treatment, meaning $Y_{0i}$ and $Y_{1i}$ are independent of $D_i$. From rules of conditional expectation, this means for $j\in\{0,1\}$,
+            Suppose we randomly assign treatment, meaning $Y_{0i}$ and $Y_{1i}$ are independent of $D_i$. From rules of conditional expectation, this means for $j,d\in\{0,1\}$,
             \begin{align}
-                \expect{Y_{ji} | D_i = 0} = \expect{Y_{ji}}
+                \expect{Y_{ji} | D_i = d} = \expect{Y_{ji}}
             \end{align}
 
             \begin{theorem}

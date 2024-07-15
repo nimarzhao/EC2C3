@@ -1,8 +1,8 @@
 \chapter{Further Identification Methods}
     \section{Regression Discontinuity Design (RDD)}
-        The method exploits a setup in which treatment is based on another variable being above or below a threshold. We can exploit this to create a situation in which treatment is as good as assigned.
+        The method exploits a setup in which treatment is based on another variable being above or below a threshold. We can exploit this to create a situation in which treatment is as good as randomly assigned.
 
-    	In particular, RDD is a powerful tool as it creates beautiful and convincing graphs. Showing the effect of  on  can be difficult to communicate to all audiences due to the numerous considerations in applied econometric analysis. Hence convincing graphs are important to convey and communicate results to others.
+    	In particular, RDD is a powerful tool as it creates beautiful and convincing graphs. Showing the effect of $x$ on $y$ can be difficult to communicate to all audiences due to the numerous considerations in applied econometric analysis. Hence convincing graphs are important to convey and communicate results to others.
 
         \subsection{Regression}
             Let $x_i$ be the `running variable', and $D_i$ be a dummy variable constructed by
@@ -19,17 +19,18 @@
 
             We want to know the effect of being over the threshold, i.e. $D_i$ on $y_i$. Consider the regression,
             \begin{align}
-                y_i = \beta_0 +\beta_1 (x_i-\theta) + \beta_2 D_i + \beta_3 (x_i-\theta)\cdot D_i+u_i
+                y_i = \beta_0 +\beta_1 (x_i-\theta) + \beta_2 D_i + \beta_3 (x_i-\theta)\cdot D_i+u_i \label{eq:RDD/RDD}
             \end{align}
-            The regression model in \eqref{eq:} is plotted in Figure XX.
-            \begin{figure}
+            The regression model in \eqref{eq:RDD/RDD} is plotted in Figure \ref{fig:RDD/RDD}.
+            \begin{figure}[h]
                 \centering
-                \caption{Caption}
-                \label{fig:enter-label}
+                \input{figures/RDD}
+                \caption{Regression Discontinuity Design (RDD)}
+                \label{fig:RDD/RDD}
             \end{figure}
 
         \subsection{Interpretation}
-            How can we interpret the coefficients? To see the meaning behind the regression \eqref{eq:}. we consider the position and slope separately.\\
+            How can we interpret the coefficients? To see the meaning behind the regression \eqref{eq:RDD/RDD}. we consider the position and slope separately.\\
             
             \noindent\textbf{Intercept and jump.}
             \begin{itemize}
@@ -42,8 +43,7 @@
                 \begin{align}
                     \expect{y_i\lvert x_i = \theta - \varepsilon} \approx \beta_0
                 \end{align}
-            \end{itemize}\\
-
+            \end{itemize}
             \noindent\textbf{Slopes.}
             \begin{itemize}
                 \item If we are \textit{below the threshold}, that is $x_i < \theta\implies D_i=0$, then
@@ -87,7 +87,7 @@
                 \item creating the interaction term,
                 \item performing the regression.
             \end{enumerate}
-            The STATA code to perform steps (1) to (4) is in Listing \ref{lst:RDD}.
+            The STATA code to perform steps (1) to (4) is in Listing \ref{lst:RDD/regression}.
             \begin{sexylisting}[colback=white, label=lst:RDD/regression]{RDD}
 //  (1) Center the running variable,
     gen x_centered = x - cutoff
@@ -170,11 +170,11 @@
         \subsection{Non-linear RDD}
             If we plot the data and observe we have a non-linear relationship between $y_i$ and $x_i$, for example a quadratic relation, then we can use a quadratic RDD model:
             \begin{align}
-                y_i = \beta_0 +\beta_1 (x_i- \theta) + \beta_2 (x_i-\theta)^2+ \beta_3 D_i + \beta_4 (x_i-\theta)\cdot D_i+\beta_5 (x_i-d)^2\cdot D_i + u_i
+                y_i = \beta_0 +\beta_1 (x_i- \theta) + \beta_2 (x_i-\theta)^2+ \beta_3 D_i + \beta_4 (x_i-\theta)\cdot D_i+\beta_5 (x_i - \theta)^2\cdot D_i + u_i
             \end{align}
             Note that with a small window, every polynomial, by Taylor’s theorem is approximately linear. 
 	        
-            An example in STATA building on preivous listings in this chapter is presented below in \ref{lst:non_linear}
+            An example in STATA building on preivous listings in this chapter is presented below in \ref{lst:RDD/non_linear}
             
             \begin{sexylisting}[colback=white, label=lst:RDD/non_linear]{Non-linear RDD}
 //  (1) Calculate Silverman's bandwidth
@@ -182,24 +182,26 @@
     gen silverman = 1.06*r(N)^(-1/5)*r(sd)
 
 //  (2) Generate linear, quadratic and interaction terms
-    gen x_centred = x – cutoff
-    gen x_centred2 = x_centred^2
+    gen x_centered = x -cutoff
+    gen x_centered2 = x_centered^2
     gen treat = x >= cutoff
-    gen interaction = treat * x_centred
-    gen interaction2 = treat * x_centred2
+    gen interaction = treat * x_centered
+    gen interaction2 = treat * x_centered2
     
-//  (3) Run the regression with Silverman's bandwidth \\
-//      and all interactions
-    reg y x_centred x_centred2 treat interaction interaction2,/*
+//  (3) Run the regression with Silverman's bandwidth and all
+//	interactions
+    reg y x_centered x_centered2 treat interaction interaction2,/*
     /* robust, if inrange(x, cutoff-silverman , cutoff+silverman) 
             \end{sexylisting}
+		
+		\subsection{Evaluation and summary}
+			We have encountered three types of errors:
+			\begin{enumerate}[(1)]
+				\item measurement error in $x$
+				\item omitted confounders
+				\item reverse causality
+			\end{enumerate}
+			RDD helps us to solve (2) bias due to confounders due to the window assumption. However note (1) and (3) are not solved by RDD.
+			
+			\textbf{RDD is viewed as a very reliable estimation strategy} if you can justify the assumption. Because it is relatively “easy” to check the assumption, RDD is one of the best econometric tools, if you can find a setting to use it. On the other hand, IV is viewed with more caution because the exogeneity assumption is often difficult to believe. DiD is viewed with more caution because parallel trends is tenuous.
 
-
-                
-
-
-
-
-            
-
-            

@@ -16,16 +16,19 @@
 \usepackage{tikz} % Diagrams
 \usepackage{enumerate} % numbered bullet points
 \usepackage[shortlabels]{enumitem}
-\usepackage{xcolor}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
 
 % CODE
 \usepackage{listings}
 \usepackage[most]{tcolorbox}
 \usepackage{inconsolata}
 
-\newtcblisting[auto counter]{sexylisting}[2][]{sharp corners, 
+\newtcblisting[auto counter]{sexylisting}[2][]{sharp corners,
     fonttitle=\bfseries, colframe=gray, listing only, 
-    listing options={basicstyle=\ttfamily,language=java}, 
+    listing options={basicstyle=\fontsize{9}{9}\ttfamily,language=java}, 
     title=Listing \thetcbcounter: #2, #1}
 
 
